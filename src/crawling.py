@@ -220,9 +220,13 @@ def yogiyo_crawling(location):
 
                 if "리뷰이벤트" in infotext:
                     rornot = "Y"
-                if "리뷰 이벤트" in infotext:
-                    rornot = "Y"
                 if "이벤트" in infotext:
+                    rornot = "Y"
+                if "리뷰" in infotext:
+                    rornot = "Y"
+                if "별점" in infotext:
+                    rornot = "Y"
+                if "5점" in infotext:
                     rornot = "Y"
 
                 if rornot == 'Y' and COUNT_Y >= REVIEW_COUNT : continue
@@ -339,8 +343,8 @@ parser.add_argument(
     -> [rank, review_avg, review_count, min_order_value, distance, estimated_delivery_time]",
 )
 parser.add_argument("--num", required=False, default=2000, help="option for amount of review data")
-parser.add_argument("--lat", required=False, default=37.4573, help="latitude for search")
-parser.add_argument("--lon", required=False, default=126.9506, help="longitude for search")
+parser.add_argument("--lat", required=False, default=37.5128, help="latitude for search")
+parser.add_argument("--lon", required=False, default=126.9240, help="longitude for search")
 args = parser.parse_args()
 
 ORDER_OPTION = args.order
