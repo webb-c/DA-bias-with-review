@@ -53,7 +53,7 @@ def get_restaurant_list(lat, lng, items=100):
     for item in response.json()["restaurants"]:
         restaurant_list.append(item["id"])
         count += 1
-    return list(set(restaurant_list))
+    return list(restaurant_list)
 
 
 # 2. 검색한 음식점 페이지 들어가기
@@ -110,7 +110,7 @@ def stretch_review_page(rornot):
     print("모든 리뷰 불러오기 시작...")
     for _ in trange(click_count):
         try:
-            if local_count >= 500 : break
+            if local_count >= 1000 : break
             scroll_bottom()
             click_more_review()
             local_count += 10
@@ -146,9 +146,9 @@ def go_back_page():
 
 
 # 8. 크롤링과 결과 데이터를 pickle 파일과 csv파일로 저장
-def save_pickle_csv(location, yogiyo_df, count):
-    yogiyo_df.to_csv("C:/Users/CoIn240/PycharmProjects/DA/data/origin/{}_{}_{}df.csv".format(location[0], location[1], count), encoding='utf-8-sig')
-    pickle.dump(yogiyo_df, open("C:/Users/CoIn240/PycharmProjects/DA/data/origin/pkl/{}_{}_{}df.pkl".format(location[0], location[1], count), "wb"))
+def save_pickle_csv(location, yogiyo_df, id):
+    yogiyo_df.to_csv("C:/Users/CoIn240/PycharmProjects/DA/data/origin/{}_{}_{}df.csv".format(location[0], location[1], id), encoding='utf-8-sig')
+    pickle.dump(yogiyo_df, open("C:/Users/CoIn240/PycharmProjects/DA/data/origin/pkl/{}_{}_{}df.pkl".format(location[0], location[1], id), "wb"))
     print("{} {} pikcle save complete.".format(location[0], location[1]))
 
 
@@ -159,14 +159,16 @@ def yogiyo_crawling(location):
     global COUNT_Y
     global REVIEW_COUNT
 
-    # 에러 발생하는 가게 제거를 위한 코드
-    f = open("../data/err_id.txt", 'r')
+    # 에러 발생하는 가게 / 이미 방문한 가게제거를 위한 코드
+    f = open("../data/id.txt", 'r')
     errList = []
     lines = f.readlines()
     for line in lines:
         line = line.strip()
         errList.append(int(line))
     f.close()
+
+    print(errList)
 
     # 데이터 프레임 구조 설정
     df = pd.DataFrame(
@@ -194,6 +196,7 @@ def yogiyo_crawling(location):
         )
         for restaurant_id in restaurant_list:
             try:
+
                 print(
                     "********** "
                     + str(restaurant_list.index(restaurant_id) + 1)
@@ -260,9 +263,14 @@ def yogiyo_crawling(location):
                         print(e)
                         pass
                 
-                # 가게 별 (500개) 저장
+                # 가게 별 (1000개) 저장
                 save_pickle_csv(location, df, COUNT_Y+COUNT_N)
                 print("save "+str(COUNT_Y)+" : "+str(COUNT_N)+" data.")
+                f = open("../data/id.txt", 'a')
+                f.write(str(restaurant_id)+"\n")
+                f.close()
+
+                if COUNT_N >= REVIEW_COUNT and COUNT_N >= REVIEW_COUNT : break
 
                 del[[df]]
                 df = pd.DataFrame(
@@ -287,6 +295,9 @@ def yogiyo_crawling(location):
             except Exception as e:
                 print("*** 음식점 ID: " + restaurant_id + " *** 음식점 페이지 에러")
                 print(e)
+                f = open("../data/id.txt", 'a')
+                f.write(str(restaurant_id)+"\n")
+                f.close()
                 pass
 
             print("음식점 리스트 페이지로 돌아가는중...")
@@ -295,8 +306,8 @@ def yogiyo_crawling(location):
     except Exception as e:
         print("*** 음식점 ID: " + restaurant_id + " *** 접근 에러")
         print(e)
-        f = open("../data/err_id.txt", 'a')
-        f.write(restaurant_id)
+        f = open("../data/id.txt", 'a')
+        f.write(str(restaurant_id)+"\n")
         f.close()
         pass
 
