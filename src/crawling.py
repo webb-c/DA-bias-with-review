@@ -10,8 +10,13 @@ warnings.filterwarnings("ignore")
 
 import requests
 from selenium import webdriver
-
 from selenium.webdriver.common.by import By
+
+# 현재까지 모은 데이터 카운팅 하기 위한 변수
+global COUNT_Y
+global COUNT_N
+COUNT_Y = 0
+COUNT_N = 0
 
 # 스크롤 내리기
 def scroll_bottom():
@@ -95,7 +100,9 @@ def click_more_review():
 
 
 # 5. 리뷰 페이지 모두 펼치기
-def stretch_review_page():
+def stretch_review_page(rornot):
+    global COUNT_Y
+    global COUNT_N
     review_count = int(
         driver.find_element(By.XPATH, '//*[@id="content"]/div[2]/div[1]/ul/li[2]/a/span').text
     )
@@ -103,8 +110,16 @@ def stretch_review_page():
     print("모든 리뷰 불러오기 시작...")
     for _ in trange(click_count):
         try:
+            if rornot == 'Y' and COUNT_Y >= REVIEW_COUNT: break
+            if rornot == 'N' and COUNT_N >= REVIEW_COUNT: break
             scroll_bottom()
             click_more_review()
+            if rornot == 'Y':
+                COUNT_Y += 10
+            else:
+                COUNT_N += 10
+            print(COUNT_Y, COUNT_N)
+
         except Exception as e:
             pass
     scroll_bottom()
@@ -180,7 +195,7 @@ def yogiyo_crawling(location):
 
                 infotext = driver.find_element(By.XPATH, '//*[@id="info"]/div[1]/div[2]').text
                 print(infotext)
-                
+
                 # 리뷰이벤트 유무 확인
                 rornot ='N'
 
@@ -194,11 +209,10 @@ def yogiyo_crawling(location):
                 op_time, addr = get_info()
 
                 go_to_review()
-                stretch_review_page()
+                stretch_review_page(rornot)
                 reviews = get_all_review_elements()
 
                 for review in tqdm(reviews):  # 해당 음식점의 리뷰 수 만큼 데이터를 가져옴
-                    print("please....")
                     try:
                         review.find_element(By.CSS_SELECTOR, "table.info-images > tbody > tr > td > div > img")
                         image = "T"
@@ -208,33 +222,17 @@ def yogiyo_crawling(location):
                     try:
                         df.loc[len(df)] = {
                             "Restaurant": driver.find_element(By.CLASS_NAME, "restaurant-name").text,
-                            "UserID": review.find_element(By.CSS_SELECTOR,
-                                                          "span.review-id.ng-binding"
-                                                          ).text,
-                            "Menu": review.find_element(By.CSS_SELECTOR,
-                                                        "div.order-items.default.ng-binding"
-                                                        ).text,
+                            "UserID": review.find_element(By.CSS_SELECTOR, "span.review-id.ng-binding").text,
+                            "Menu": review.find_element(By.CSS_SELECTOR, "div.order-items.default.ng-binding").text,
                             "Review": review.find_element(By.CSS_SELECTOR, "p").text,
                             "image": image,
                             "Total": str(
-                                len(
-                                    review.find_elements(By.CSS_SELECTOR,
-                                                        "div > span.total > span.full.ng-scope"
-                                                        )
-                                )
+                                len(review.find_elements(By.CSS_SELECTOR, "div > span.total > span.full.ng-scope"))
                             ),
-                            "Taste": review.find_element(By.CSS_SELECTOR,
-                                                         "div:nth-child(2) > div > span.category > span:nth-child(3)"
-                                                         ).text,
-                            "Quantity": review.find_element(By.CSS_SELECTOR,
-                                                            "div:nth-child(2) > div > span.category > span:nth-child(6)"
-                                                            ).text,
-                            "Delivery": review.find_element(By.CSS_SELECTOR,
-                                                            "div:nth-child(2) > div > span.category > span:nth-child(9)"
-                                                            ).text,
-                            "Date": review.find_element(By.CSS_SELECTOR,
-                                                        "div:nth-child(1) > span.review-time.ng-binding"
-                                                        ).text,
+                            "Taste": review.find_element(By.CSS_SELECTOR, "div:nth-child(2) > div > span.category > span:nth-child(3)").text,
+                            "Quantity": review.find_element(By.CSS_SELECTOR, "div:nth-child(2) > div > span.category > span:nth-child(6)").text,
+                            "Delivery": review.find_element(By.CSS_SELECTOR, "div:nth-child(2) > div > span.category > span:nth-child(9)").text,
+                            "Date": review.find_element(By.CSS_SELECTOR,  "div:nth-child(1) > span.review-time.ng-binding").text,
                             "OperationTime": op_time,
                             "Address": addr,
                             "event": rornot,
@@ -287,13 +285,14 @@ parser.add_argument(
     help="option for restaurant list order / choose one \
     -> [rank, review_avg, review_count, min_order_value, distance, estimated_delivery_time]",
 )
-parser.add_argument("--num", required=False, default=100, help="option for amount of review data")
+parser.add_argument("--num", required=False, default=500, help="option for amount of review data")
 parser.add_argument("--lat", required=False, default=37.4573, help="latitude for search")
 parser.add_argument("--lon", required=False, default=126.9506, help="longitude for search")
 args = parser.parse_args()
 
 ORDER_OPTION = args.order
-RESTAURANT_COUNT = int(args.num)
+REVIEW_COUNT = int(args.num)
+RESTAURANT_COUNT = 10
 LAT = float(args.lat)
 LON = float(args.lon)
 

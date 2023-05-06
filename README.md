@@ -37,13 +37,13 @@ _where_ option is
 - order : order criteria
   - rank
   - review_avg
-  - review_count
+  - review_count (default)
   - min_order_value
   - distance
 - num : # review (each)
 - lat : latitude
 - lon : longitude
 
-Basically, more than 2,500 reviews are collected each for stores that hold review events and stores that do not.
+Basically, more than 500 reviews are collected each for stores that hold review events and stores that do not. 
 
 @ crawler reference : https://github.com/ariels1996/Yogiyo-Review-Crawling-with-Selenium
