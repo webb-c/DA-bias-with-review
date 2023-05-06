@@ -53,7 +53,6 @@ def get_restaurant_list(lat, lng, items=100):
     for item in response.json()["restaurants"]:
         restaurant_list.append(item["id"])
         count += 1
-    print(restaurant_list)
     return list(set(restaurant_list))
 
 
@@ -65,14 +64,14 @@ def go_to_restaurant(id):
         print(driver.current_url)
     except Exception as e:
         print("go_to_restaurant 에러")
-    time.sleep(5)
+    time.sleep(2)
 
 
 # 3-1. 해당 음식점의 정보 페이지로 넘어가기
 def go_to_info():
     print("정보 페이지 로드중...")
     driver.find_element(By.XPATH, '//*[@id="content"]/div[2]/div[1]/ul/li[3]/a').click()
-    time.sleep(2)
+    time.sleep(1)
     print("정보 페이지 로드 완료")
 
 
@@ -96,13 +95,14 @@ def go_to_review():
 # 4-2. 리뷰 더보기 클릭하기
 def click_more_review():
     driver.find_element(By.CLASS_NAME, "btn-more").click()
-    time.sleep(2)
+    time.sleep(1)
 
 
 # 5. 리뷰 페이지 모두 펼치기
 def stretch_review_page(rornot):
-    global COUNT_Y
     global COUNT_N
+    global COUNT_Y
+    local_count = 0
     review_count = int(
         driver.find_element(By.XPATH, '//*[@id="content"]/div[2]/div[1]/ul/li[2]/a/span').text
     )
@@ -110,14 +110,12 @@ def stretch_review_page(rornot):
     print("모든 리뷰 불러오기 시작...")
     for _ in trange(click_count):
         try:
-            if rornot == 'Y' and COUNT_Y >= REVIEW_COUNT: break
-            if rornot == 'N' and COUNT_N >= REVIEW_COUNT: break
+            if local_count >= 500 : break
             scroll_bottom()
             click_more_review()
-            if rornot == 'Y':
-                COUNT_Y += 10
-            else:
-                COUNT_N += 10
+            local_count += 10
+            if rornot == 'Y':  COUNT_Y += 10
+            else: COUNT_N += 10
             print(COUNT_Y, COUNT_N)
 
         except Exception as e:
@@ -148,14 +146,28 @@ def go_back_page():
 
 
 # 8. 크롤링과 결과 데이터를 pickle 파일과 csv파일로 저장
-def save_pickle_csv(location, yogiyo_df):
-    yogiyo_df.to_csv("C:/Users/CoIn240/PycharmProjects/DA/data/origin/{}_{}_df.csv".format(location[0], location[1]), encoding='utf-8-sig')
-    pickle.dump(yogiyo_df, open("C:/Users/CoIn240/PycharmProjects/DA/data/origin/pkl/{}_{}_df.pkl".format(location[0], location[1]), "wb"))
+def save_pickle_csv(location, yogiyo_df, count):
+    yogiyo_df.to_csv("C:/Users/CoIn240/PycharmProjects/DA/data/origin/{}_{}_{}df.csv".format(location[0], location[1], count), encoding='utf-8-sig')
+    pickle.dump(yogiyo_df, open("C:/Users/CoIn240/PycharmProjects/DA/data/origin/pkl/{}_{}_{}df.pkl".format(location[0], location[1], count), "wb"))
     print("{} {} pikcle save complete.".format(location[0], location[1]))
 
 
 # 9. 크롤링 메인 함수
 def yogiyo_crawling(location):
+    # 전역 선언
+    global COUNT_N
+    global COUNT_Y
+    global REVIEW_COUNT
+
+    # 에러 발생하는 가게 제거를 위한 코드
+    f = open("../data/err_id.txt", 'r')
+    errList = []
+    lines = f.readlines()
+    for line in lines:
+        line = line.strip()
+        errList.append(int(line))
+    f.close()
+
     # 데이터 프레임 구조 설정
     df = pd.DataFrame(
         columns=[
@@ -187,8 +199,12 @@ def yogiyo_crawling(location):
                     + str(restaurant_list.index(restaurant_id) + 1)
                     + "/"
                     + str(len(restaurant_list))
-                    + " 번째 **********"
+                    + " 번째 ("
+                    + str(restaurant_id)
+                    + ") **********"
                 )
+
+                if restaurant_id in errList : continue # 오류나는 곳이면 skip
 
                 go_to_restaurant(restaurant_id)  # 검색한 음식점 클릭
                 go_to_info()  # 음식점 정보창 클릭
@@ -206,6 +222,8 @@ def yogiyo_crawling(location):
                 if "이벤트" in infotext:
                     rornot = "Y"
 
+                if rornot == 'Y' and COUNT_Y >= REVIEW_COUNT : continue
+                if rornot == 'N' and COUNT_N >= REVIEW_COUNT : continue
                 op_time, addr = get_info()
 
                 go_to_review()
@@ -241,11 +259,33 @@ def yogiyo_crawling(location):
                         print("리뷰 페이지 에러")
                         print(e)
                         pass
+                
+                # 가게 별 (500개) 저장
+                save_pickle_csv(location, df, COUNT_Y+COUNT_N)
+                print("save "+str(COUNT_Y)+" : "+str(COUNT_N)+" data.")
 
+                del[[df]]
+                df = pd.DataFrame(
+                    columns=[
+                        "Restaurant",
+                        "UserID",
+                        "Menu",
+                        "Review",
+                        "Total",
+                        "Taste",
+                        "Quantity",
+                        "Delivery",
+                        "image",
+                        "event",
+                        "Date",
+                        "OperationTime",
+                        "Address",
+
+                    ]
+                )
 
             except Exception as e:
-                print("*** 음식점 ID:" + restaurant_id + " *** 음식점 페이지 에러")
-                go_back_page()
+                print("*** 음식점 ID: " + restaurant_id + " *** 음식점 페이지 에러")
                 print(e)
                 pass
 
@@ -253,12 +293,14 @@ def yogiyo_crawling(location):
             go_back_page()
 
     except Exception as e:
-        print("음식점 리스트 페이지 에러")
+        print("*** 음식점 ID: " + restaurant_id + " *** 접근 에러")
         print(e)
+        f = open("../data/err_id.txt", 'a')
+        f.write(restaurant_id)
+        f.close()
         pass
 
     print("End of [ {} - {} ] Crawling.".format(location[0], location[1]))
-    save_pickle_csv(location, df)
     print("{} {} crawling finish.".format(location[0], location[1]))
 
     return df
@@ -271,7 +313,7 @@ def start_yogiyo_crawling():
 
     for location in locations:
         try:
-            yogiyo = yogiyo_crawling(location)
+            yogiyo_crawling(location)
         except Exception as e:
             print(e)
             pass
@@ -292,7 +334,7 @@ args = parser.parse_args()
 
 ORDER_OPTION = args.order
 REVIEW_COUNT = int(args.num)
-RESTAURANT_COUNT = 15
+RESTAURANT_COUNT = 50
 LAT = float(args.lat)
 LON = float(args.lon)
 
