@@ -285,14 +285,14 @@ parser.add_argument(
     help="option for restaurant list order / choose one \
     -> [rank, review_avg, review_count, min_order_value, distance, estimated_delivery_time]",
 )
-parser.add_argument("--num", required=False, default=500, help="option for amount of review data")
+parser.add_argument("--num", required=False, default=2000, help="option for amount of review data")
 parser.add_argument("--lat", required=False, default=37.4573, help="latitude for search")
 parser.add_argument("--lon", required=False, default=126.9506, help="longitude for search")
 args = parser.parse_args()
 
 ORDER_OPTION = args.order
 REVIEW_COUNT = int(args.num)
-RESTAURANT_COUNT = 10
+RESTAURANT_COUNT = 15
 LAT = float(args.lat)
 LON = float(args.lon)
 

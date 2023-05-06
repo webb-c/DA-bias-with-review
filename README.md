@@ -44,6 +44,6 @@ _where_ option is
 - lat : latitude
 - lon : longitude
 
-Basically, more than 500 reviews are collected each for stores that hold review events and stores that do not. 
+Basically, more than 2000 reviews are collected each for stores that hold review events and stores that do not. 
 
 @ crawler reference : https://github.com/ariels1996/Yogiyo-Review-Crawling-with-Selenium
