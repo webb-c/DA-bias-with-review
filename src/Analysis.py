@@ -9,14 +9,16 @@ from nltk import FreqDist
 from wordcloud import WordCloud
 from collections import Counter
 
-dirpath = '../data/test'
+readDirPath = '../data/test'
+tableSaveDirPath = '../data/test' # ../data/analytics/table
+imgSaveDirPath = '../data/test'   # ../data/analytics/visualization
 def read_file() :
     '''
     dataframe structure =
         index, restaurant(str), review(str), length(int), totalRate(int), image(int; 1_0), event(int; 1_0)
     '''
-    filepath_Y = dirpath+'/노원구_전처리_Y.csv'
-    filepath_N = dirpath+'/노원구_전처리_N.csv'
+    filepath_Y = readDirPath+'/노원구_전처리_Y.csv'
+    filepath_N = readDirPath+'/노원구_전처리_N.csv'
     df_Y = pd.read_csv(filepath_Y)
     df_N = pd.read_csv(filepath_N)
     return df_Y, df_N
@@ -33,8 +35,8 @@ def analysis_aggregate(df, event):
     rate_fig.update_layout(title="Pie graph : total score Rate")
     photo_fig = go.Figure(data=[go.Pie(labels=['True', 'False'], values=photoList, pull=[0.05, 0])])
     photo_fig.update_layout(title="Pie graph : photo Review Rate")
-    pio.write_image(rate_fig, dirpath + '/rate_pie_{}.png'.format(event))
-    pio.write_image(photo_fig, dirpath + '/photo_pie_{}.png'.format(event))
+    pio.write_image(rate_fig, imgSaveDirPath + '/score_pie_{}.png'.format(event))
+    pio.write_image(photo_fig, imgSaveDirPath + '/photo_pie_{}.png'.format(event))
     return photoRate, scoreRate_list
 
 # 분포 분석 (histogram)
@@ -42,6 +44,7 @@ def analysis_distribution(df, event) :
     # length
     len_df = df['length'].value_counts().to_frame().reset_index()
     len_df = len_df.rename(columns={'index':'length', 'length': 'count'})
+    len_df.to_csv( tableSaveDirPath + "/length_count_{}.csv".format(event), encoding='utf-8-sig')
     len_info = []
     len_info.append(df['length'].mean())
     len_info.append(df['length'].std())
@@ -50,6 +53,7 @@ def analysis_distribution(df, event) :
     # rate
     rate_df = df['totalRate'].value_counts().to_frame().reset_index()
     rate_df = rate_df.rename(columns={'index': 'totalRate', 'totalRate': 'count'})
+    rate_df.to_csv(tableSaveDirPath + "/score_count_{}.csv".format(event), encoding='utf-8-sig')
     rate_info = []
     rate_info.append(df['totalRate'].mean())
     rate_info.append(df['totalRate'].std())
@@ -68,12 +72,13 @@ def analysis_distribution(df, event) :
         xaxis_title="Score",
         yaxis_title="Frequency",
     )
-    pio.write_image(len_fig, dirpath + '/len_histo_{}.png'.format(event))
-    pio.write_image(rate_fig, dirpath + '/rate_histo_{}.png'.format(event))
+    pio.write_image(len_fig, imgSaveDirPath + '/len_histo_{}.png'.format(event))
+    pio.write_image(rate_fig, imgSaveDirPath + '/score_histo_{}.png'.format(event))
 
     return len_info, rate_info
 
-# def analysis_text(df):
+def analysis_text(df):
+    d
 
 def analysis_print(distribution_info, aggregate_info, text_info) :
     len_info, rate_info = distribution_info
