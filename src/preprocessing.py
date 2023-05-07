@@ -1,4 +1,5 @@
 import re
+import os
 import csv
 from konlpy.tag import Okt
 import pandas as pd
