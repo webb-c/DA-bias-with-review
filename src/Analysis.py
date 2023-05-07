@@ -103,9 +103,8 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
-    font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf' # 윈도우 ?
     word_cloud = WordCloud (
-        font_path=font_path,
+        font_path=fontPath,
         min_font_size=1,
         max_font_size=40,
         relative_scaling=0.2,
@@ -133,10 +132,12 @@ def analysis() :
     df_Y, df_N = read_file()
     print("***** 리뷰이벤트를 진행하는 곳 *****")
     analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'))
+    print("\n4) 리뷰 텍스트 분석")
     analysis_text(df_Y, 'Y')
 
     print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
     analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'))
+    print("\n4) 리뷰 텍스트 분석")
     analysis_text(df_N, 'N')
 
 
