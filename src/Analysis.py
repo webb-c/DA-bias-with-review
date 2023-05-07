@@ -1,13 +1,21 @@
+import csv
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
 import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objs as go
 import kaleido
 from nltk import FreqDist
+from nltk import Text
 from wordcloud import WordCloud
 from collections import Counter
+
+fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
+font = font_manager.FontProperties(fname=fontPath).get_name()
+rc('font', family=font)
 
 readDirPath = '../data/test'
 tableSaveDirPath = '../data/test' # ../data/analytics/table
@@ -77,8 +85,35 @@ def analysis_distribution(df, event) :
 
     return len_info, rate_info
 
-def analysis_text(df):
-    d
+def analysis_text(df, event):
+    reviewList = list(df['review'])
+    wordList = list(word for review in reviewList for word in review.split())
+    # 단어 개수 카운트
+    words = Text(wordList, name="요기요 리뷰데이터")
+    dic = FreqDist(wordList)
+    plt.figure(figsize=(13,9))
+    words.plot(10)
+    plt.show() # 직접 저장
+    print("총 단어의 개수: ", dic.N())
+    print("고유 단어의 개수: ", dic.B())
+    print("===== 빈도수 정렬 =====")
+    print(dic.most_common(n=10))
+    countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
+    countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
+    # 시각화
+    font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf' # 윈도우 ?
+    word_cloud = WordCloud (
+        font_path=font_path,
+        min_font_size=1,
+        max_font_size=40,
+        relative_scaling=0.2,
+        background_color='white',
+        prefer_horizontal=0.6,
+    ).generate_from_frequencies(dic)
+    plt.imshow(word_cloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    return countData
 
 def analysis_print(distribution_info, aggregate_info, text_info) :
     len_info, rate_info = distribution_info
@@ -95,10 +130,9 @@ def analysis_print(distribution_info, aggregate_info, text_info) :
 def analysis() :
     df_Y, df_N = read_file()
     print("***** 리뷰이벤트를 진행하는 곳 *****")
-    analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'), 0)
-
-    print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
-    analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'), 0)
-
+    #analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'), 0)
+    analysis_text(df_Y, 'Y')
+    #print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
+    #analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'), 0)
 
 analysis()
