@@ -24,12 +24,17 @@ def read_file() :
 def analysis_aggregate(df, event):
     length = df.shape[0]
     photoCount = len(df.loc[df['image'] == 1])
+    photoList = df['image'].value_counts().tolist()
     photoRate = photoCount / length
     scoreRate = df['totalRate'].value_counts().tolist()
     scoreRate_list = [x / length for x in scoreRate]
     # 시각화
-    fig = go.Figure(data=[go.Pie(labels=['5', '4', '3', '2', '1'], values=scoreRate, pull=[0.05, 0, 0, 0, 0])])
-    pio.write_image(fig, dirpath+'/pie_{}.png'.format(event))
+    rate_fig = go.Figure(data=[go.Pie(labels=['5', '4', '3', '2', '1'], values=scoreRate, pull=[0.05, 0, 0, 0, 0])])
+    rate_fig.update_layout(title="Pie graph : total score Rate")
+    photo_fig = go.Figure(data=[go.Pie(labels=['True', 'False'], values=photoList, pull=[0.05, 0])])
+    photo_fig.update_layout(title="Pie graph : photo Review Rate")
+    pio.write_image(rate_fig, dirpath + '/rate_pie_{}.png'.format(event))
+    pio.write_image(photo_fig, dirpath + '/photo_pie_{}.png'.format(event))
     return photoRate, scoreRate_list
 
 # 분포 분석 (histogram)
