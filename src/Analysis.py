@@ -102,20 +102,7 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
-    '''
-    font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf' # 윈도우 ?
-    word_cloud = WordCloud (
-        font_path=font_path,
-        min_font_size=1,
-        max_font_size=40,
-        relative_scaling=0.2,
-        background_color='white',
-        prefer_horizontal=0.6,
-    ).generate_from_frequencies(dic)
-    plt.imshow(word_cloud, interpolation='bilinear')
-    plt.axis('off')
-    plt.show()
-    '''
+    text_visualization(dic)
     return countData
 
 def analysis_print(distribution_info, aggregate_info) :
