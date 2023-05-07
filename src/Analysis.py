@@ -13,7 +13,8 @@ from nltk import Text
 from wordcloud import WordCloud
 from collections import Counter
 
-fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
+#fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
+fontPath = "C:/Windows/Fonts/malgun.ttf"
 font = font_manager.FontProperties(fname=fontPath).get_name()
 rc('font', family=font)
 
@@ -102,7 +103,6 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
-    '''
     font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf' # 윈도우 ?
     word_cloud = WordCloud (
         font_path=font_path,
@@ -115,7 +115,6 @@ def analysis_text(df, event):
     plt.imshow(word_cloud, interpolation='bilinear')
     plt.axis('off')
     plt.show()
-    '''
     return countData
 
 def analysis_print(distribution_info, aggregate_info) :
