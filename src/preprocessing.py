@@ -36,61 +36,72 @@ def origin_to_processing(review) :
                     clean_word_tokens.append(word)
         # 저장을 위해 원본 형태로 변경
         clean_sentence_tokens.append(" ".join(clean_word_tokens).strip())
-    clean_review = ". ".join(clean_sentence_tokens).strip()
+    clean_review = " ".join(clean_sentence_tokens).strip()
     return length, clean_review
 
 # csv 파일 읽기 & 쓰기
-dfY = pd.DataFrame(
-    columns=[
-        "restaurant",
-        "review",
-        "length",
-        "totalRate",
-        "image",
-    ]
-)
 
-dfN = pd.DataFrame(
-    columns=[
-        "restaurant",
-        "review",
-        "length",
-        "totalRate",
-        "image",
-    ]
-)
+# csv 파일 처리하기
+read_folder_path = '../data/origin'
+fileList = [ f for f in os.listdir(read_folder_path) if f.endswith('.csv')]
 
-db = open('../data/test/노원구.csv', 'r', encoding='utf-8-sig')
-reader = csv.reader(db)
-next(reader) # 헤더 제거
-num = 0
-for row in tqdm(reader):
-    # Restaurant(str), Review,(str) avg rate(int; 0,5), image(T/F), event(Y/N)
-    name, review, rate, image, event = row[1], row[4], row[5], row[9], row[10]
-    length, new_review = origin_to_processing(review)
-    # test
-    test_review = new_review.replace(" ", "").replace(".", "")
-    if len(test_review) == 0 : continue
-    if event == "Y":
-        dfY.loc[len(dfY)] = {
-            "restaurant" : name,
-            "review" : new_review,
-            "length" : length,
-            "totalRate" : rate,
-            "image" : 1 if image == 'T' else 0,
-        }
-    else:
-        dfN.loc[len(dfN)] = {
-            "restaurant": name,
-            "review": new_review,
-            "length": length,
-            "totalRate": rate,
-            "image": 1 if image == 'T' else 0,
-        }
+for filename in fileList :
+    filePath = os.path.join(read_folder_path, filename)
+    db = open(filePath, 'r', encoding='utf-8-sig')
+    reader = csv.reader(db)
+    next(reader) # 헤더 제거
+    dfY = pd.DataFrame(
+        columns=[
+            "restaurant",
+            "review",
+            "length",
+            "totalRate",
+            "image",
+            "event",
+        ]
+    )
+    dfN = pd.DataFrame(
+        columns=[
+            "restaurant",
+            "review",
+            "length",
+            "totalRate",
+            "image",
+            "event",
+        ]
+    )
+    for row in tqdm(reader):
+        # Restaurant(str), Review,(str) avg rate(int; 0,5), image(T/F), event(Y/N)
+        name, review, rate, image, event = row[1], row[4], row[5], row[9], row[10]
+        length, new_review = origin_to_processing(review)
+        # test
+        test_review = new_review.replace(" ", "")
+        if len(test_review) == 0 : continue
+        if event == "Y":
+            dfY.loc[len(dfY)] = {
+                "restaurant": name,
+                "review": new_review,
+                "length": length,
+                "totalRate": rate,
+                "image": 1 if image == 'T' else 0,
+                "event": 1,
+            }
+        else:
+            dfN.loc[len(dfN)] = {
+                "restaurant": name,
+                "review": new_review,
+                "length": length,
+                "totalRate": rate,
+                "image": 1 if image == 'T' else 0,
+                "event": 0,
+            }
+    db.close()
 
-db.close()
+    # 저장
+    dfY.to_csv("../data/preprocessing/{}_전처리_Y.csv".format(filename.split(".")[0]), encoding='utf-8-sig')
+    dfN.to_csv("../data/preprocessing/{}_전처리_N.csv".format(filename.split(".")[0]), encoding='utf-8-sig')
 
-# 저장
-dfY.to_csv("../data/test/노원구_전처리_Y.csv", encoding='utf-8-sig')
-dfN.to_csv("../data/test/노원구_전처리_N.csv", encoding='utf-8-sig')
-print("csv 파일 저장완료")
+    del [[dfY]]
+    del [[dfN]]
+
+    print("{} 전처리 파일 저장 완료".format(filename.split(".")[0]))

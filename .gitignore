@@ -1,2 +1,4 @@
 .idea
 data/origin/*
+data/preprocessing/*
+data/dataset/*
