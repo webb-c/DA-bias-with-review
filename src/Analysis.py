@@ -17,16 +17,17 @@ fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
 font = font_manager.FontProperties(fname=fontPath).get_name()
 rc('font', family=font)
 
-readDirPath = '../data/test'
-tableSaveDirPath = '../data/test' # ../data/analytics/table
-imgSaveDirPath = '../data/test'   # ../data/analytics/visualization
+readDirPath = '../data/dataset'
+tableSaveDirPath = '../data/analytics/table'
+imgSaveDirPath = '../data/analytics/visualization'
+
 def read_file() :
     '''
     dataframe structure =
         index, restaurant(str), review(str), length(int), totalRate(int), image(int; 1_0), event(int; 1_0)
     '''
-    filepath_Y = readDirPath+'/노원구_전처리_Y.csv'
-    filepath_N = readDirPath+'/노원구_전처리_N.csv'
+    filepath_Y = readDirPath+'/dataset_Y.csv'
+    filepath_N = readDirPath+'/dataset_N.csv'
     df_Y = pd.read_csv(filepath_Y)
     df_N = pd.read_csv(filepath_N)
     return df_Y, df_N
@@ -101,6 +102,7 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
+    '''
     font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf' # 윈도우 ?
     word_cloud = WordCloud (
         font_path=font_path,
@@ -113,9 +115,10 @@ def analysis_text(df, event):
     plt.imshow(word_cloud, interpolation='bilinear')
     plt.axis('off')
     plt.show()
+    '''
     return countData
 
-def analysis_print(distribution_info, aggregate_info, text_info) :
+def analysis_print(distribution_info, aggregate_info) :
     len_info, rate_info = distribution_info
     photoRate, scoreRate_list = aggregate_info
     print("1) 리뷰 텍스트의 길이 분석")
@@ -130,9 +133,12 @@ def analysis_print(distribution_info, aggregate_info, text_info) :
 def analysis() :
     df_Y, df_N = read_file()
     print("***** 리뷰이벤트를 진행하는 곳 *****")
-    #analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'), 0)
+    analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'))
     analysis_text(df_Y, 'Y')
-    #print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
-    #analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'), 0)
+
+    print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
+    analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'))
+    analysis_text(df_N, 'N')
+
 
 analysis()
