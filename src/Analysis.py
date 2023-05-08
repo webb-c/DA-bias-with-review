@@ -102,7 +102,7 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
-    text_visualization(dic)
+    # text_visualization(dic)
     return countData
 
 def analysis_print(distribution_info, aggregate_info) :
@@ -171,8 +171,8 @@ def between_review(countY, countN):
     # 1, 2번 함께 시각화
     visual_Y = pd.concat([countY_only, diff_df_Y], axis=0)
     visual_N = pd.concat([countN_only, diff_df_N], axis=0)
-    text_visualization(visual_Y)
-    text_visualization(visual_N)
+    # text_visualization(visual_Y)
+    # text_visualization(visual_N)
 
     # 부정 단어 빈도 비교
     print("\n3) 부정 단어가 차지하는 비율")
