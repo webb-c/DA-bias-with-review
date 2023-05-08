@@ -97,12 +97,14 @@ def analysis_text(df, event):
     plt.show() # 직접 저장
     print("총 단어의 개수: ", dic.N())
     print("고유 단어의 개수: ", dic.B())
-    print("===== 빈도수 정렬 =====")
-    print(dic.most_common(n=10))
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
     # text_visualization(dic)
+    print("===== 비율 계산 =====")
+    countData['count_rate'] = countData['frequency'] / sum(countData['frequency'])
+    count_del = countData[countData['count_rate'] >= 0.0003]
+    print(count_del)
     return countData
 
 def analysis_print(distribution_info, aggregate_info) :
@@ -178,11 +180,11 @@ def between_review(countY, countN):
     print("\n3) 부정 단어가 차지하는 비율")
     negative = ['실망', '후회', '최악', '별로']
     for word in negative :
-        rowsY = countY_del.loc[countY_del['word'] == word]
+        rowsY = countY.loc[countY['word'] == word]
         print("===== " + word + " : Y =====")
         if not rowsY.empty : print(rowsY)
         print("===== " + word + " : N =====")
-        rowsN = countN_del.loc[countN_del['word'] == word]
+        rowsN = countN.loc[countN['word'] == word]
         if not rowsN.empty : print(rowsN)
 
     # 이벤트 관련 단어 빈도 비교
