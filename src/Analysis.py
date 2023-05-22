@@ -11,14 +11,14 @@ from nltk import FreqDist
 from nltk import Text
 from wordcloud import WordCloud
 
-fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
-#fontPath = "C:/Windows/Fonts/malgun.ttf"
+#fontPath = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
+fontPath = "C:/Windows/Fonts/malgun.ttf"
 font = font_manager.FontProperties(fname=fontPath).get_name()
 rc('font', family=font)
 
-readDirPath = '../data/dataset'
-tableSaveDirPath = '../data/analytics/table'
-imgSaveDirPath = '../data/analytics/visualization'
+readDirPath = 'C:/Users/CoIn240/PycharmProjects/DA/data/dataset'
+tableSaveDirPath = 'C:/Users/CoIn240/PycharmProjects/DA/data/analytics/table'
+imgSaveDirPath = 'C:/Users/CoIn240/PycharmProjects/DA/data/analytics/visualization'
 
 def read_file() :
     '''
@@ -100,7 +100,7 @@ def analysis_text(df, event):
     countData = pd.DataFrame(dic.most_common(), columns=['word', 'frequency'])
     countData.to_csv(tableSaveDirPath + '/words_{}.csv'.format(event), encoding='utf-8-sig')
     # 시각화
-    # text_visualization(dic)
+    text_visualization(dic)
     print("===== 비율 계산 =====")
     countData['count_rate'] = countData['frequency'] / sum(countData['frequency'])
     count_del = countData[countData['count_rate'] >= 0.0003]
@@ -119,7 +119,7 @@ def analysis_print(distribution_info, aggregate_info) :
     print("\n3) 포토 리뷰의 비율: "+str(photoRate))
 
 def text_visualization(fdic):
-    font_path = '/Users/vaughan/Library/Fonts/NanumBarunGothic.otf'  # 윈도우 ?
+    font_path = 'C:/Windows/Fonts/malgun.ttf'  # 윈도우 ?
     word_cloud = WordCloud(
         font_path=font_path,
         min_font_size=1,
@@ -134,15 +134,15 @@ def text_visualization(fdic):
 
 def between_review(countY, countN):
     # 음식 이름 제거 (시각화)
-    f = open("../data/food_words.txt", 'r')
+    f = open("C:/Users/CoIn240/PycharmProjects/DA/data/food_words_window.txt", 'r', encoding='UTF8')
     foodList = [line.strip() for line in f.readlines()]
     f.close()
     countY = countY[~countY['word'].isin(foodList)]
     countN = countN[~countN['word'].isin(foodList)]
     fdistY = FreqDist(dict(zip(list(countY['word']), list(countY['frequency']))))
     fdistN = FreqDist(dict(zip(list(countN['word']), list(countN['frequency']))))
-    #text_visualization(fdistY)
-    #text_visualization(fdistN)
+    text_visualization(fdistY)
+    text_visualization(fdistN)
 
     # 단어별 비율 계산
     countY['count_rate'] = countY['frequency'] / sum(countY['frequency'])
@@ -173,8 +173,12 @@ def between_review(countY, countN):
     # 1, 2번 함께 시각화
     visual_Y = pd.concat([countY_only, diff_df_Y], axis=0)
     visual_N = pd.concat([countN_only, diff_df_N], axis=0)
-    # text_visualization(visual_Y)
-    # text_visualization(visual_N)
+    fdistY2 = FreqDist(dict(zip(list(visual_Y['word']), list(visual_Y['frequency']))))
+    fdistN2 = FreqDist(dict(zip(list(visual_N['word']), list(visual_N['frequency']))))
+    text_visualization(fdistY2)
+    text_visualization(fdistN2)
+    visual_Y.to_csv(tableSaveDirPath+"/important_words_Y.csv", encoding='utf-8-sig')
+    visual_N.to_csv(tableSaveDirPath + "/important_words_N.csv", encoding='utf-8-sig')
 
     # 부정 단어 빈도 비교
     print("\n3) 부정 단어가 차지하는 비율")
@@ -208,19 +212,19 @@ def score_and_rivew(df):
 
 def analysis() :
     df_Y, df_N, df = read_file()
-    print("***** 리뷰이벤트를 진행하는 곳 *****")
-    analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'))
+    #print("***** 리뷰이벤트를 진행하는 곳 *****")
+    #analysis_print(analysis_distribution(df_Y, 'Y'), analysis_aggregate(df_Y, 'Y'))
     countY = analysis_text(df_Y, 'Y')
 
-    print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
-    analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'))
+    #print("\n***** 리뷰이벤트를 진행하지 않는 곳 *****")
+    #analysis_print(analysis_distribution(df_N, 'N'), analysis_aggregate(df_N, 'N'))
     countF = analysis_text(df_N, 'N')
 
     print("\n***** 진행하는 곳과 진행하지 않는 곳의 텍스트 차이 *****")
     between_review(countY, countF)
 
-    print("\n***** 별점(긍정/부정)에 따른 리뷰 텍스트 차이 *****")
-    score_and_rivew(df)
+    #print("\n***** 별점(긍정/부정)에 따른 리뷰 텍스트 차이 *****")
+    #score_and_rivew(df)
 
 
 analysis()
